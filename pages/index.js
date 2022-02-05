@@ -38,7 +38,6 @@ export default function index() {
           if (error) return <div>{error.message}</div>;
           setDefaultProductName(data.products.edges[0].node.title)
           setProductId(data.products.edges[0].node.id)
-          // display nothing for query
           return null;
         }}
       </Query>
@@ -71,10 +70,14 @@ export default function index() {
                   minLength={5}
                 />
                 <Button
-                  onClick={() => handleSubmit({ variables: { input: {
-                    id: "gid://shopify/Product/" + productId,
-                    title: productName
-                  } }})}
+                  onClick={() => {
+                    handleSubmit({ variables: { input: {
+                      id: productId,
+                      title: productName
+                    } }})
+                    setHasResults(true)
+                  }
+                }
                 >
                   Update Product Name
                 </Button>
