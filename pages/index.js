@@ -6,6 +6,7 @@ import { Page, Layout, TextField, Button, Frame, Banner, Toast, DisplayText } fr
 export default function index() {
   const [productId, setProductId] = useState("");
   const [productName, setProductName] = useState("");
+  const [defaultProductName, setDefaultProductName] = useState("");
   const handleChange = useCallback((newProductName) => setProductName(newProductName), []);
 
   const GET_FIRST_PRODUCT = gql`
@@ -35,7 +36,7 @@ export default function index() {
         {({ data, loading, error }) => {
           if (loading) return <div>Loading…</div>;
           if (error) return <div>{error.message}</div>;
-          setProductName(data.products.edges[0].node.title)
+          setDefaultProductName(data.products.edges[0].node.title)
           setProductId(data.products.edges[0].node.id)
           // display nothing for query
           return null;
@@ -64,6 +65,7 @@ export default function index() {
                 </Layout.Section>
                 <TextField
                   value={productName}
+                  placeholder={defaultProductName}
                   onChange={handleChange}
                   autoComplete="off"
                   minLength={5}
