@@ -1,12 +1,24 @@
 import React, { useCallback, useState } from 'react';
 import gql from 'graphql-tag';
-import { Mutation } from 'react-apollo';
-import { Page, Layout, TextField, Button, Frame, Banner, Toast } from "@shopify/polaris";
-import store from 'store-js';
+import { Mutation, Query } from 'react-apollo';
+import { Page, Layout, TextField, Button, Frame, Banner, Toast, DisplayText } from "@shopify/polaris";
 
 export default function index() {
+  const [productId, setProductId] = useState("");
   const [productName, setProductName] = useState("");
   const handleChange = useCallback((newProductName) => setProductName(newProductName), []);
+
+  const GET_FIRST_PRODUCT = gql`
+  query getProducts($first: Int) {
+    products(first: $first) {
+      edges {
+        node {
+          title
+          id
+        }
+      }
+    }
+  }`;
 
   const UPDATE_PRODUCT_NAME = gql`
   mutation productUpdate($input: ProductInput!) {
@@ -19,13 +31,17 @@ export default function index() {
 
   return (
     <Page>
+      <Query query={GET_FIRST_PRODUCT} variables={{ first: 1 }}>
+        {({ data, loading, error }) => {
+          if (loading) return <div>Loading…</div>;
+          if (error) return <div>{error.message}</div>;
+          setProductName(data.products.edges[0].node.title)
+          setProductId(data.products.edges[0].node.id)
+          // display nothing for query
+          return null;
+        }}
+      </Query>
       <Layout>
-        <TextField
-          value={productName}
-          onChange={handleChange}
-          autoComplete="off"
-          minLength={5}
-        />
         <Mutation mutation={UPDATE_PRODUCT_NAME}>
           {(handleSubmit, {error, data}) => {
             const [hasResults, setHasResults] = useState(false);
@@ -42,9 +58,19 @@ export default function index() {
             );
             return (
               <Frame>
+                {showToast}
+                <Layout.Section>
+                  {showError}
+                </Layout.Section>
+                <TextField
+                  value={productName}
+                  onChange={handleChange}
+                  autoComplete="off"
+                  minLength={5}
+                />
                 <Button
                   onClick={() => handleSubmit({ variables: { input: {
-                    id: "gid://shopify/Product/6732947423329",
+                    id: "gid://shopify/Product/" + productId,
                     title: productName
                   } }})}
                 >
